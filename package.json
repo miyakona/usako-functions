@@ -5,9 +5,10 @@
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy",
     "logs": "firebase functions:log",
-    "lint": "eslint src --fix"
+    "lint": "eslint src --fix",
+    "config-dev": "firebase functions:config:set `cat .config.dev| tr \"\n\r\" \" \"`",
+    "config-prd": "firebase functions:config:set `cat .config.prd| tr \"\n\r\" \" \"`"
   },
   "engines": {
     "node": "12"

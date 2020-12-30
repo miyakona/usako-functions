@@ -91,5 +91,3 @@ sw.*
 
 usako-dev.json
 .runtimeconfig.json
-.config.dev
-.config.prd

@@ -1,12 +1,7 @@
 name: ci
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  push
 
 jobs:
   ci:
@@ -46,10 +41,14 @@ jobs:
       - name: Run linter 👀
         run: yarn lint
 
-      - name: Run tests 🧪
-        run: yarn test
+      # TODO: 実装
+      # - name: Run tests 🧪
+      #   run: yarn test
   deploy-dev:
-    needs: ci
+    needs: [ci]
+    runs-on: ${{ matrix.os }}
+    env:
+      project-id: usako-4c763
 
     strategy:
       matrix:
@@ -82,14 +81,27 @@ jobs:
       - name: Install dependencies 👨🏻‍💻
         run: yarn install
 
-      - run: yarn build
+      - name: deploy config for dev
+        uses: w9jds/firebase-action@master
+        with:
+          args: functions:config:set `cat .config.dev | tr "\n\r" " "` --project ${{ env.project-id }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN_DEV }}
 
-      - name: deploy dev
-        run: yarn deploy --token=${{ secrets.FIREBASE_TOKEN_DEV }}
+      - name: deploy code to dev
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --project ${{ env.project-id }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN_DEV }}
+
 
   deploy-prd:
-    if: github.event.pull_request.merged == true
-    needs: ci
+    if: github.ref == 'refs/heads/master'
+    needs: [ci]
+    runs-on: ${{ matrix.os }}
+    env:
+      project-id: usako-4c763
 
     strategy:
       matrix:
@@ -122,7 +134,16 @@ jobs:
       - name: Install dependencies 👨🏻‍💻
         run: yarn install
 
-      - run: yarn build
+      - name: deploy config for prd
+        uses: w9jds/firebase-action@master
+        with:
+          args: functions:config:set `cat .config.prd | tr "\n\r" " "` --project ${{ env.project-id }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN_PRD }}
 
-      - name: deploy dev
-        run: yarn deploy --token=${{ secrets.FIREBASE_TOKEN_PRD }}
+      - name: deploy code to prd
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --project ${{ env.project-id }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN_PRD }}
